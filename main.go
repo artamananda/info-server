@@ -19,8 +19,8 @@ type Response struct {
 }
 
 type SystemStats struct {
-	Load          string `json:"cpu_load"`
-	MemoryUsage   string `json:"memory_usage"`
+	Load           string `json:"cpu_load"`
+	MemoryUsage    string `json:"memory_usage"`
 	CPUTemperature string `json:"cpu_temperature"`
 }
 
@@ -29,12 +29,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	memStats, _ := mem.VirtualMemory()
 	cpuTemp, _ := getCPUTemperature()
 
-	result := []interface{}{
-		SystemStats{
-			Load:           strconv.FormatFloat(load[0], 'f', 0, 64) + "%",
-			MemoryUsage:    strconv.FormatFloat(memStats.UsedPercent, 'f', 0, 64) + "%",
-			CPUTemperature: strconv.FormatFloat(cpuTemp, 'f', 0, 64) + "°C",
-		},
+	result := SystemStats{
+		Load:           strconv.FormatFloat(load[0], 'f', 0, 64) + "%",
+		MemoryUsage:    strconv.FormatFloat(memStats.UsedPercent, 'f', 0, 64) + "%",
+		CPUTemperature: strconv.FormatFloat(cpuTemp, 'f', 0, 64) + "°C",
 	}
 
 	response := Response{

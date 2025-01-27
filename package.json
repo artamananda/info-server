@@ -1,0 +1,8 @@
+{
+  "apps": [
+    {
+      "name": "main",
+      "script": "./main"
+    }
+  ]
+}

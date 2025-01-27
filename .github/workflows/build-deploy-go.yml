@@ -1,0 +1,36 @@
+name: Build and Push Go Binary for Linux ARM64
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.23"
+
+      - name: Set up Git configuration
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Build Go binary for Linux ARM64
+        run: |
+          GOOS=linux GOARCH=arm64 go build -o myapp-linux-arm64 main.go
+
+      - name: Commit and push binary to repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git add myapp-linux-arm64
+          git commit -m "Add built binary for Linux ARM64"
+          git push origin main
