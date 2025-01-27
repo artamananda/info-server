@@ -1,8 +1,8 @@
 {
   "apps": [
     {
-      "name": "main",
-      "script": "./main"
+      "name": "info-server-arm64",
+      "script": "./info-server-arm64"
     }
   ]
 }
