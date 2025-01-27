@@ -4,19 +4,43 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
+
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/mem"
 )
 
 type Response struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Payload string `json:"payload"`
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Payload interface{} `json:"payload"`
+}
+
+type SystemStats struct {
+	Load          string `json:"cpu_load"`
+	MemoryUsage   string `json:"memory_usage"`
+	CPUTemperature string `json:"cpu_temperature"`
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	load, _ := cpu.Percent(0, false)
+	memStats, _ := mem.VirtualMemory()
+	cpuTemp, _ := getCPUTemperature()
+
+	result := []interface{}{
+		SystemStats{
+			Load:           strconv.FormatFloat(load[0], 'f', 0, 64) + "%",
+			MemoryUsage:    strconv.FormatFloat(memStats.UsedPercent, 'f', 0, 64) + "%",
+			CPUTemperature: strconv.FormatFloat(cpuTemp, 'f', 0, 64) + "°C",
+		},
+	}
+
 	response := Response{
 		Code:    200,
 		Message: "Success",
-		Payload: "0.1.1",
+		Payload: result,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -26,6 +50,22 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func getCPUTemperature() (float64, error) {
+	tempFile := "/sys/class/thermal/thermal_zone0/temp"
+	data, err := os.ReadFile(tempFile)
+	if err != nil {
+		return 0, err
+	}
+
+	tempStr := strings.TrimSpace(string(data))
+	temp, err := strconv.ParseFloat(tempStr, 64)
+	if err != nil {
+		return 0, err
+	}
+	temp = temp / 1000.0
+	return temp, nil
 }
 
 func myIPHandler(w http.ResponseWriter, r *http.Request) {
@@ -62,4 +102,3 @@ func main() {
 	http.HandleFunc("/my-ip", myIPHandler)
 	http.ListenAndServe(":8000", nil)
 }
-
