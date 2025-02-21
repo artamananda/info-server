@@ -67,7 +67,7 @@ func getCPUTemperature() (float64, error) {
 }
 
 func myIPHandler(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get("https://ifconfig.me")
+	resp, err := http.Get("https://ifconfig.me/ip")
 	if err != nil {
 		http.Error(w, "Unable to fetch IP", http.StatusInternalServerError)
 		return
