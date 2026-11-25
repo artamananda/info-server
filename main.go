@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
 )
 
@@ -21,17 +22,31 @@ type Response struct {
 type SystemStats struct {
 	Load           string `json:"cpu_load"`
 	MemoryUsage    string `json:"memory_usage"`
+	SwapUsage      string `json:"swap_usage"`
+	DiskUsage      string `json:"disk_usage"`
 	CPUTemperature string `json:"cpu_temperature"`
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	load, _ := cpu.Percent(0, false)
 	memStats, _ := mem.VirtualMemory()
+	swapStats, _ := mem.SwapMemory()
+	diskStats, _ := disk.Usage("/")
 	cpuTemp, _ := getCPUTemperature()
+
+	var swapPercent, diskPercent float64
+	if swapStats != nil {
+		swapPercent = swapStats.UsedPercent
+	}
+	if diskStats != nil {
+		diskPercent = diskStats.UsedPercent
+	}
 
 	result := SystemStats{
 		Load:           strconv.FormatFloat(load[0], 'f', 0, 64) + "%",
 		MemoryUsage:    strconv.FormatFloat(memStats.UsedPercent, 'f', 0, 64) + "%",
+		SwapUsage:      strconv.FormatFloat(swapPercent, 'f', 0, 64) + "%",
+		DiskUsage:      strconv.FormatFloat(diskPercent, 'f', 0, 64) + "%",
 		CPUTemperature: strconv.FormatFloat(cpuTemp, 'f', 0, 64) + "°C",
 	}
 
